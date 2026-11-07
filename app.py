@@ -161,6 +161,7 @@ with tab_overview:
 with tab_predict:
     st.subheader("Explore the model with a sample input")
     st.markdown('<div class="section-intro">Choose values using the dataset codes. Submit the form to see the model output and a local feature explanation. <strong>Use demonstration values only.</strong></div>', unsafe_allow_html=True)
+    st.caption("Category options include plain-language labels from the [UCI dataset documentation](https://archive.ics.uci.edu/dataset/45/heart%2Bdisease).")
     metadata = feature_metadata()
     with st.form("case_form"):
         entered = {}
@@ -170,12 +171,18 @@ with tab_predict:
             with columns[index % 3]:
                 if "options" in meta:
                     options = meta["options"]
-                    entered[feature] = st.selectbox(meta["label"], options, index=options.index(meta["default"]))
+                    option_labels = meta.get("option_labels", {})
+                    entered[feature] = st.selectbox(
+                        meta["label"], options, index=options.index(meta["default"]),
+                        format_func=lambda value, labels=option_labels: f"{value} · {labels.get(int(value), 'Dataset code')}",
+                        help=meta.get("help"),
+                    )
                 else:
                     entered[feature] = st.number_input(
                         f"{meta['label']} ({meta.get('unit', '')})".strip(),
                         min_value=float(meta["min"]), max_value=float(meta["max"]),
                         value=float(meta["default"]), step=float(meta["step"]),
+                        help=meta.get("help"),
                     )
         submitted = st.form_submit_button("Show model output  →", type="primary", width="stretch")
 
