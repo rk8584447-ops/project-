@@ -6,7 +6,7 @@ Academic prototype for the project synopsis **Explainable AI-Based Machine Learn
 
 ## Run locally
 
-Use Python 3.10 or newer.
+Use Python 3.12, the version used to generate and verify the included artifacts.
 
 ```bash
 python -m venv .venv
@@ -15,13 +15,13 @@ python -m pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The first run downloads dataset 45 from the UCI Machine Learning Repository and caches it in `data/`. An internet connection is needed the first time. To train and save the experiment outside the interface:
+The de-identified Cleveland subset is included in `data/heart_disease.csv`, so the demo and training run offline. `src/data.py` can refresh the file from UCI dataset 45 if requested in code. The data is shared under CC BY 4.0; attribution and DOI are in [data/README.md](data/README.md). To train and save the experiment outside the interface:
 
 ```bash
 python -m src.train
 ```
 
-Training outputs are written to `artifacts/` and `reports/`. Metrics are computed from a stratified held-out test split; the app does not claim clinical validity.
+Training outputs are written to `artifacts/` and `reports/`, including model comparison, confusion matrix, ROC curve, global feature importance, and a sample SHAP explanation. Metrics are computed from a stratified held-out test split; the app does not claim clinical validity.
 
 ## Dataset and target
 
@@ -33,13 +33,16 @@ This is a small, historical, single-source dataset. It is not representative of 
 
 ```text
 app.py                 Streamlit dashboard
-src/data.py            UCI loading and target preparation
+src/data.py            Local UCI data loading and target preparation
 src/modeling.py        Leakage-safe preprocessing, training, evaluation, SHAP
 src/train.py           Reproducible training and report generation
-data/                  Downloaded public dataset (created on first run)
-artifacts/             Saved model bundle (created by training)
-reports/               Metrics and model comparison (created by training)
+data/                  Attributed public Cleveland dataset copy
+artifacts/             Saved selected model bundle
+reports/               Metrics, explanations, figures, and run summary
+tests/                 Automated data and model-pipeline checks
 ```
+
+Run automated checks with `python -m unittest discover -s tests -v`.
 
 ## What the prototype shows
 

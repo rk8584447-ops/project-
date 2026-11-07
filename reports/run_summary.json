@@ -1,0 +1,22 @@
+{
+  "records":303,
+  "features":13,
+  "test_records":61,
+  "cross_validation_folds":5,
+  "selected_model":"Random Forest",
+  "confusion_matrix_labels_0_1":[
+    [
+      27,
+      6
+    ],
+    [
+      2,
+      26
+    ]
+  ],
+  "false_positive_count":6,
+  "false_negative_count":2,
+  "sample_explanation_index":219,
+  "sample_explanation_prediction":0,
+  "sample_explanation_probability_class_1":0.3086480621
+}

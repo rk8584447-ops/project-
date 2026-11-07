@@ -53,14 +53,14 @@ with tab_overview:
     )
     st.dataframe(
         experiment["results"].style.format({column: "{:.3f}" for column in experiment["results"].columns if column != "Model"}),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
     left, right = st.columns(2)
     with left:
         st.markdown("**Selected model: confusion matrix**")
         cm = experiment["confusion_matrix"]
-        st.dataframe(pd.DataFrame(cm, index=["Actual 0", "Actual 1"], columns=["Predicted 0", "Predicted 1"]), use_container_width=True)
+        st.dataframe(pd.DataFrame(cm, index=["Actual 0", "Actual 1"], columns=["Predicted 0", "Predicted 1"]), width="stretch")
         st.caption("Target 0/1 reflects the UCI dataset grouping (num=0 vs num=1–4), not a clinical determination.")
     with right:
         st.markdown("**Selected model: ROC curve**")
@@ -69,14 +69,14 @@ with tab_overview:
         ax.plot([0, 1], [0, 1], linestyle="--", color="#8b949e", linewidth=1)
         ax.set_title("Held-out test data")
         fig.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        st.pyplot(fig, width="stretch", alt="ROC curve for the selected model on the held-out test split")
         plt.close(fig)
     st.markdown("**Global feature importance**")
     st.caption("Permutation importance measures the change in held-out ROC-AUC when one input feature is shuffled. It is a model diagnostic, not a causal effect.")
     if st.button("Calculate global importance", key="global_importance"):
         with st.spinner("Calculating permutation importance…"):
             importance = global_permutation_importance(experiment)
-        st.dataframe(importance.style.format({"Importance (mean ROC-AUC decrease)": "{:.4f}", "Std": "{:.4f}"}), use_container_width=True, hide_index=True)
+        st.dataframe(importance.style.format({"Importance (mean ROC-AUC decrease)": "{:.4f}", "Std": "{:.4f}"}), width="stretch", hide_index=True)
 
 with tab_predict:
     st.subheader("Inspect a structured input")
@@ -125,15 +125,15 @@ with tab_predict:
             ax.set_xlabel("SHAP contribution to class 1 output")
             ax.set_ylabel("")
             fig.tight_layout()
-            st.pyplot(fig, use_container_width=True)
+            st.pyplot(fig, width="stretch", alt="Local SHAP contributions for the selected model output")
             plt.close(fig)
-            st.dataframe(explanation.head(8).style.format({"SHAP value": "{:+.4f}"}), use_container_width=True, hide_index=True)
+            st.dataframe(explanation.head(8).style.format({"SHAP value": "{:+.4f}"}), width="stretch", hide_index=True)
 
 with tab_method:
     st.subheader("Method")
     st.markdown(
         """
-        1. Fetch UCI Heart Disease dataset 45 and use the 13 selected Cleveland predictors.
+        1. Load the attributed UCI Heart Disease dataset 45 copy and use the 13 selected Cleveland predictors.
         2. Convert the original outcome `num` to the synopsis target: `0 → class 0`, `1–4 → class 1`.
         3. Split data with stratification and a fixed seed. Imputation, encoding, and scaling are fitted inside each model pipeline.
         4. Compare Logistic Regression, Decision Tree, Random Forest, and Gradient Boosting. Select on stratified training-partition cross-validation ROC-AUC.
