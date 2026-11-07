@@ -9,6 +9,7 @@ data/*
 artifacts/*
 !artifacts/.gitkeep
 !artifacts/heart_disease_model.joblib
+!artifacts/project_experiment.joblib
 reports/*
 !reports/.gitkeep
 !reports/model_comparison.csv

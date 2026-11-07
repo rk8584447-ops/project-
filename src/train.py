@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import RocCurveDisplay
 
-from src.data import load_heart_data
+from src.data import dataset_signature, load_heart_data
 from src.modeling import explain_case, global_permutation_importance, train_experiment
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,8 +25,19 @@ def main() -> None:
         "feature_names": list(X.columns),
         "target_definition": "UCI num: 0 -> 0; 1-4 -> 1",
         "random_state": 42,
+        "dataset_signature": dataset_signature(X, y),
     }
     joblib.dump(bundle, ROOT / "artifacts" / "heart_disease_model.joblib")
+    joblib.dump(
+        {
+            "experiment": experiment,
+            "dataset_signature": dataset_signature(X, y),
+            "feature_names": list(X.columns),
+            "random_state": 42,
+        },
+        ROOT / "artifacts" / "project_experiment.joblib",
+        compress=3,
+    )
     experiment["results"].to_csv(ROOT / "reports" / "model_comparison.csv", index=False)
 
     # Save figure/report evidence so the submitted results can be reproduced.

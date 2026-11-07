@@ -15,13 +15,13 @@ python -m pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The de-identified Cleveland subset is included in `data/heart_disease.csv`, so the demo and training run offline. `src/data.py` can refresh the file from UCI dataset 45 if requested in code. The data is shared under CC BY 4.0; attribution and DOI are in [data/README.md](data/README.md). To train and save the experiment outside the interface:
+The de-identified Cleveland subset is included in `data/heart_disease.csv`, so the demo and training run offline. `src/data.py` can refresh the file from UCI dataset 45 if requested in code. The data is shared under CC BY 4.0; attribution and DOI are in [data/README.md](data/README.md). The app loads the checked-in experiment bundle for quick startup; if the data changes or that bundle is unavailable, it computes a fresh run. To regenerate the saved models, metrics, and explanations:
 
 ```bash
 python -m src.train
 ```
 
-Training outputs are written to `artifacts/` and `reports/`, including model comparison, confusion matrix, ROC curve, global feature importance, and a sample SHAP explanation. Metrics are computed from a stratified held-out test split; the app does not claim clinical validity.
+Training outputs are written to `artifacts/` and `reports/`. The full experiment bundle contains the fitted candidate models, train/test split, model comparison, and metadata needed by the dashboard. Reports include the confusion matrix, ROC curve, global feature importance, and a sample SHAP explanation. The app checks that the bundle matches the included dataset before using it. Metrics are computed from a stratified held-out test split; the app does not claim clinical validity.
 
 ## Dataset and target
 
@@ -37,7 +37,7 @@ src/data.py            Local UCI data loading and target preparation
 src/modeling.py        Leakage-safe preprocessing, training, evaluation, SHAP
 src/train.py           Reproducible training and report generation
 data/                  Attributed public Cleveland dataset copy
-artifacts/             Saved selected model bundle
+artifacts/             Saved model and full experiment bundle
 reports/               Metrics, explanations, figures, and run summary
 tests/                 Automated data and model-pipeline checks
 ```

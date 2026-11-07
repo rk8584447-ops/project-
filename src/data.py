@@ -1,12 +1,21 @@
 """Dataset access and target preparation for the UCI Heart Disease data."""
 
 from pathlib import Path
+import hashlib
 
 import pandas as pd
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 CACHE_FILE = DATA_DIR / "heart_disease.csv"
 TARGET_COLUMN = "num"
+
+
+def dataset_signature(X: pd.DataFrame, y: pd.Series) -> str:
+    """Return a stable digest for the prepared features and target."""
+    prepared = X.copy()
+    prepared["__project_target__"] = y.to_numpy()
+    hashed = pd.util.hash_pandas_object(prepared, index=True).to_numpy().tobytes()
+    return hashlib.sha256(hashed).hexdigest()
 
 
 def load_heart_data(refresh: bool = False) -> tuple[pd.DataFrame, pd.Series]:

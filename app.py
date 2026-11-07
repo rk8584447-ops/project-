@@ -1,12 +1,14 @@
 """Streamlit interface for the explainable heart-disease academic prototype."""
 
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
+from pathlib import Path
 from sklearn.metrics import RocCurveDisplay
 
-from src.data import feature_metadata, load_heart_data
+from src.data import dataset_signature, feature_metadata, load_heart_data
 from src.modeling import explain_case, global_permutation_importance, train_experiment
 
 st.set_page_config(page_title="Explainable CDSS | Heart Disease", page_icon="🫀", layout="wide", initial_sidebar_state="collapsed")
@@ -62,15 +64,30 @@ st.markdown(
 @st.cache_resource(show_spinner="Preparing the bundled dataset and model comparison…")
 def get_experiment():
     X, y = load_heart_data()
-    return X, y, train_experiment(X, y)
+    artifact_path = Path(__file__).resolve().parent / "artifacts" / "project_experiment.joblib"
+    if artifact_path.exists():
+        try:
+            bundle = joblib.load(artifact_path)
+            if (
+                bundle.get("dataset_signature") == dataset_signature(X, y)
+                and bundle.get("feature_names") == list(X.columns)
+                and bundle.get("random_state") == 42
+            ):
+                return X, y, bundle["experiment"], "Saved project run"
+        except Exception:
+            pass
+    return X, y, train_experiment(X, y), "Fresh run"
 
 
 try:
-    X, y, experiment = get_experiment()
+    X, y, experiment, run_source = get_experiment()
 except Exception as exc:
     st.error(f"The project could not prepare the dataset: {exc}")
     st.info("Install the project dependencies from requirements.txt. The bundled dataset is available in data/heart_disease.csv.")
     st.stop()
+
+if run_source == "Fresh run":
+    st.info("No matching saved experiment was found, so the app trained a fresh model comparison. Run `python -m src.train` to refresh the saved project bundle.")
 
 best_row = experiment["results"].iloc[0]
 metric_cols = st.columns(4)
@@ -86,7 +103,7 @@ with tab_overview:
     st.markdown(
         f'<div class="section-intro"><strong>{experiment["best_name"]}</strong> was selected using mean ROC-AUC from '
         f'{experiment["cv_folds"]}-fold cross-validation on training data. Scores below use the separate '
-        f'{len(experiment["y_test"])}-record held-out split.</div>', unsafe_allow_html=True)
+        f'{len(experiment["y_test"])}-record held-out split. <span style="color:#71858a">{run_source} · seed 42</span></div>', unsafe_allow_html=True)
     st.dataframe(
         experiment["results"].style.format({column: "{:.3f}" for column in experiment["results"].columns if column != "Model"})
             .background_gradient(subset=["CV ROC-AUC (mean)", "ROC-AUC"], cmap="GnBu", vmin=0, vmax=1),
